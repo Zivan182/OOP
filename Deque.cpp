@@ -6,12 +6,14 @@ template<typename T>
 class Deque {
 
 private:
+
 	size_t arr_capacity;
 	size_t bucket_size = 8;
 	size_t deq_size = 0;
 	T** arr;
 
 public:
+
 	template <bool is_const>
 	struct common_iterator {
 		T** arr;
@@ -21,11 +23,8 @@ public:
 		T* ptr;
 
 		common_iterator(void) = default;
-
 		common_iterator(const common_iterator<true>& it) : arr(it.arr), capacity(it.capacity), x(it.x), y(it.y), ptr(it.ptr) {}
-    
 		common_iterator(const common_iterator<false>& it) : arr(it.arr), capacity(it.capacity), x(it.x), y(it.y), ptr(it.ptr) {}
-    
 		common_iterator(T** _arr, size_t _capacity, int _x, int _y) : arr(_arr), capacity(_capacity), x(_x), y(_y) {
 			ptr = arr[x] + y;
 		}
@@ -38,7 +37,6 @@ public:
 			ptr = it.ptr;
 			return *this;
 		}
-
 		common_iterator& operator++() {
 			++y;
 			if (y == 8) {
@@ -48,7 +46,6 @@ public:
 			ptr = arr[x] + y;
 			return *this;
 		}
-    
 		common_iterator& operator--() {
 			--y;
 			if (y == -1) {
@@ -58,7 +55,6 @@ public:
 			ptr = arr[x] + y;
 			return *this;
 		}
-    
 		common_iterator& operator+=(int step) {
 			step += y;
 			int jump = step / 8;
@@ -68,7 +64,6 @@ public:
 			ptr = arr[x] + y;
 			return *this;
 		}
-    
 		common_iterator& operator-=(int step) {
 			step += (8 - y);
 			int jump = (step - 1) / 8;
@@ -78,13 +73,12 @@ public:
 			ptr = arr[x] + y;
 			return *this;
 		}
-    
 		common_iterator operator+(int step) {
 			common_iterator copy = *this;
 			copy += step;
 			return copy;
+
 		}
-    
 		common_iterator operator-(int step) {
 			common_iterator copy = *this;
 			copy -= step;
@@ -94,47 +88,38 @@ public:
 		bool operator<(const common_iterator& it) {
 			return (x < it.x) || ((x == it.x) && (y < it.y));
 		}
-    
 		bool operator>(const common_iterator& it) {
 			return (x > it.x) || ((x == it.x) && (y > it.y));
 		}
-    
 		bool operator<=(const common_iterator& it) {
 			return (x < it.x) || ((x == it.x) && (y <= it.y));
 		}
-    
 		bool operator>=(const common_iterator& it) {
 			return (x > it.x) || ((x == it.x) && (y >= it.y));
 		}
-    
-		bool operator==(const common_iterator& it) const{
+		bool operator==(const common_iterator& it) const {
 			return (ptr == it.ptr);
 		}
-    
-		bool operator!=(const common_iterator& it) const{
+		bool operator!=(const common_iterator& it) const {
 			return !(ptr == it.ptr);
 		}
-    
 		int operator-(const common_iterator& it) const {
 			return (x - it.x) * 8 + (y - it.y);
 		}
-    
 		std::conditional_t<is_const, const T&, T&> operator*() {
 			return *ptr;
 		}
-    
 		std::conditional_t<is_const, const T*, T*> operator->() {
 			return ptr;
 		}
 
 	};
-	
+
 	using iterator = common_iterator<false>;
 	using const_iterator = common_iterator<true>;
 
 	using reverse_iterator = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-
 
 	iterator _begin;
 	iterator _end;
@@ -145,8 +130,9 @@ public:
 		_begin = iterator(arr, arr_capacity, 0, 0);
 		_end = iterator(arr, arr_capacity, 0, 0);
 	}
-  
+
 	Deque(const Deque& d) : arr_capacity(d.arr_capacity), deq_size(d.deq_size) {
+
 		arr = new T * [arr_capacity];
 		for (size_t i = 0; i != arr_capacity; i++)
 			arr[i] = reinterpret_cast<T*>(new int8_t[sizeof(T) * bucket_size]);
@@ -167,11 +153,13 @@ public:
 				delete[] reinterpret_cast<int8_t*>(arr[i]);
 			delete[] arr;
 		}
+
 	}
-  
+
 	Deque(int a) : Deque(a, T()) {}
 
 	Deque(int a, const T& value) : arr_capacity((size_t)((a / 8) + 1) * 3), deq_size((size_t)(a)) {
+
 		arr = new T * [arr_capacity];
 		for (size_t i = 0; i != arr_capacity; i++)
 			arr[i] = reinterpret_cast<T*>(new int8_t[sizeof(T) * bucket_size]);
@@ -195,6 +183,7 @@ public:
 			delete[] arr;
 		}
 	}
+
 
 	Deque& operator=(const Deque& d) {
 		for (size_t i = 0; i != deq_size; ++i) {
@@ -230,6 +219,7 @@ public:
 		return *this;
 	}
 
+
 	size_t size() const {
 		return deq_size;
 	}
@@ -259,7 +249,6 @@ public:
 	}
 
 	void reserve() {
-		std::cerr << "reserve" << ' ';
 		size_t new_capacity = arr_capacity * 3;
 
 		T** new_arr = new T * [new_capacity];
@@ -282,6 +271,7 @@ public:
 				delete[] reinterpret_cast<int8_t*>(new_arr[i]);
 			delete[] new_arr;
 		}
+
 		delete[] arr;
 		arr = new_arr;
 		arr_capacity = new_capacity;
@@ -295,20 +285,17 @@ public:
 		++_end;
 		++deq_size;
 	}
-  
 	void pop_back() {
 		(_end - 1).ptr->~T();
 		--_end;
 		--deq_size;
 	}
-  
 	void push_front(const T& value) {
 		if (_begin.x == 0 && _begin.y == 0) reserve();
 		--_begin;
 		new(_begin.ptr) T(value);
 		++deq_size;
 	}
-  
 	void pop_front() {
 		_begin.ptr->~T();
 		++_begin;
@@ -318,50 +305,42 @@ public:
 	iterator begin() {
 		return _begin;
 	}
-  
 	iterator end() {
 		return _end;
 	}
-  
 	const_iterator cbegin() const {
 		return const_iterator(_begin);
 	}
-  
 	const_iterator cend() const {
 		return const_iterator(_end);
 	}
-  
 	const_iterator begin() const {
 		return const_iterator(_begin);
 	}
-  
 	const_iterator end() const {
 		return const_iterator(_end);
 	}
-  
 	reverse_iterator rbegin() {
 		return reverse_iterator(_end - 1);
 	}
-  
 	reverse_iterator rend() {
 		return reverse_iterator(_begin() - 1);
 	}
-  
 	const_reverse_iterator crbegin() const {
 		return const_reverse_iterator(_end - 1);
 	}
-  
 	const_reverse_iterator crend() const {
 		return const_reverse_iterator(_begin - 1);
 	}
-  
 	const_reverse_iterator rbegin() const {
 		return const_reverse_iterator(_end - 1);
 	}
-  
 	const_reverse_iterator rend() const {
 		return const_reverse_iterator(_begin - 1);
+
 	}
+
+
 
 	void insert(iterator it, const T& value) {
 		iterator iter = _end - 1;
@@ -390,5 +369,5 @@ public:
 			delete[] reinterpret_cast<int8_t*>(arr[i]);
 		delete[] arr;
 	}
-  
 };
+
